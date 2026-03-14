@@ -1,0 +1,512 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agentes Inteligentes - Dots and Boxes</title>
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=satoshi@400,500,700&display=swap" />
+  <style>
+    :root {
+      --bg-0: #0a0f1f;
+      --bg-1: #111b36;
+      --bg-2: #1d2e5b;
+      --ink: #f6f8ff;
+      --muted: #b7c2e3;
+      --blue: #2563eb;
+      --red: #dc2626;
+      --gold: #f59e0b;
+      --line: rgba(255,255,255,0.14);
+      --panel: rgba(255,255,255,0.06);
+
+      --font-display: 'Clash Display', sans-serif;
+      --font-body: 'Satoshi', sans-serif;
+
+      --title: clamp(1.6rem, 5.2vw, 4.6rem);
+      --h2: clamp(1.2rem, 3.4vw, 2.3rem);
+      --h3: clamp(1rem, 2.3vw, 1.5rem);
+      --body: clamp(0.8rem, 1.2vw, 1.05rem);
+      --small: clamp(0.7rem, 1vw, 0.9rem);
+
+      --pad: clamp(1rem, 4vw, 3.5rem);
+      --gap: clamp(0.6rem, 1.8vw, 1.5rem);
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; scroll-behavior: smooth; scroll-snap-type: y mandatory; }
+    body {
+      height: 100%;
+      overflow-x: hidden;
+      background:
+        radial-gradient(1100px 620px at 0% 0%, #19326f 0%, transparent 65%),
+        radial-gradient(1000px 580px at 100% 100%, #321c5b 0%, transparent 70%),
+        linear-gradient(140deg, var(--bg-0), var(--bg-1) 55%, var(--bg-2));
+      color: var(--ink);
+      font-family: var(--font-body);
+    }
+
+    .progress {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 4px;
+      z-index: 100;
+      background: rgba(255,255,255,0.08);
+    }
+    .progress > i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #5da2ff, #9fd0ff, #ffd66b);
+      transition: width 0.35s var(--ease);
+    }
+
+    .slide {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      padding: var(--pad);
+    }
+
+    .slide-content {
+      max-width: min(1100px, 94vw);
+      width: 100%;
+      margin: 0 auto;
+      max-height: 100%;
+      overflow: hidden;
+      display: grid;
+      gap: var(--gap);
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(26px);
+      transition: opacity 0.65s var(--ease), transform 0.65s var(--ease);
+    }
+    .slide.visible .reveal { opacity: 1; transform: translateY(0); }
+    .slide.visible .reveal:nth-child(1) { transition-delay: 0.08s; }
+    .slide.visible .reveal:nth-child(2) { transition-delay: 0.16s; }
+    .slide.visible .reveal:nth-child(3) { transition-delay: 0.24s; }
+    .slide.visible .reveal:nth-child(4) { transition-delay: 0.32s; }
+
+    h1, h2, h3 { font-family: var(--font-display); line-height: 1.05; letter-spacing: 0.01em; }
+    h1 { font-size: var(--title); }
+    h2 { font-size: var(--h2); }
+    h3 { font-size: var(--h3); }
+    p, li { font-size: var(--body); line-height: 1.45; color: #edf1ff; }
+    .muted { color: var(--muted); }
+
+    .kicker {
+      display: inline-block;
+      width: fit-content;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: var(--small);
+      padding: 0.28rem 0.78rem;
+      background: rgba(255,255,255,0.04);
+      color: #dbe5ff;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap); }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap); }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--panel);
+      backdrop-filter: blur(4px);
+      padding: clamp(0.7rem, 1.5vw, 1.2rem);
+      display: grid;
+      gap: clamp(0.35rem, 0.9vw, 0.7rem);
+    }
+
+    ul { list-style: none; display: grid; gap: clamp(0.35rem, 0.8vw, 0.65rem); }
+    li::before { content: "• "; color: #9ec5ff; }
+
+    .code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: clamp(0.75rem, 1.2vw, 0.95rem);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 14px;
+      background: rgba(5, 7, 16, 0.65);
+      padding: clamp(0.6rem, 1.2vw, 1rem);
+      white-space: pre-wrap;
+      color: #d7e3ff;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--body);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .table th, .table td {
+      padding: clamp(0.45rem, 1vw, 0.7rem);
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+    }
+    .table th { color: #c7d7ff; font-weight: 700; }
+
+    .legend { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+    .tag { border: 1px solid var(--line); border-radius: 999px; padding: 0.2rem 0.7rem; font-size: var(--small); }
+    .blue { color: #b9d5ff; border-color: rgba(37,99,235,0.45); background: rgba(37,99,235,0.2); }
+    .red { color: #ffc2c2; border-color: rgba(220,38,38,0.45); background: rgba(220,38,38,0.2); }
+    .gold { color: #ffe8b2; border-color: rgba(245,158,11,0.45); background: rgba(245,158,11,0.2); }
+
+    .nav-dots {
+      position: fixed;
+      right: clamp(0.4rem, 1.5vw, 1rem);
+      top: 50%;
+      transform: translateY(-50%);
+      display: grid;
+      gap: 0.5rem;
+      z-index: 80;
+    }
+    .nav-dots button {
+      width: 10px;
+      height: 10px;
+      border: 0;
+      border-radius: 50%;
+      cursor: pointer;
+      background: rgba(255,255,255,0.3);
+    }
+    .nav-dots button.active { background: #fff; transform: scale(1.35); }
+
+    .hint {
+      position: fixed;
+      left: 50%;
+      bottom: 0.8rem;
+      transform: translateX(-50%);
+      font-size: var(--small);
+      color: #d5def8;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.18rem 0.65rem;
+      background: rgba(0,0,0,0.25);
+      z-index: 90;
+    }
+
+    @media (max-width: 850px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+    @media (max-height: 700px) {
+      :root { --pad: clamp(0.8rem, 3.2vw, 1.8rem); --title: clamp(1.3rem, 4.6vw, 2.8rem); }
+    }
+    @media (max-height: 600px) {
+      :root { --pad: clamp(0.6rem, 2.8vw, 1.4rem); --body: clamp(0.72rem, 1.05vw, 0.88rem); }
+      .hint { display: none; }
+    }
+    @media (max-height: 500px) {
+      :root { --title: clamp(1.1rem, 4.1vw, 2rem); --h2: clamp(1rem, 2.8vw, 1.5rem); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" aria-hidden="true"><i id="progressFill"></i></div>
+  <nav class="nav-dots" id="navDots" aria-label="Navegação dos slides"></nav>
+  <div class="hint">Setas, espaço, PgUp/PgDn ou scroll</div>
+
+  <section class="slide">
+    <div class="slide-content">
+      <span class="kicker reveal">Fundamentos de IA • Aula universitária</span>
+      <h1 class="reveal">Agentes Inteligentes em Ação: Dots and Boxes</h1>
+      <p class="reveal muted">Projeto React com competição AI vs AI para explicar percepção, decisão, recompensa e comportamento multiagente.</p>
+      <div class="legend reveal">
+        <span class="tag blue">AI 1: Greedy</span>
+        <span class="tag red">AI 2: Heurística + Aleatoriedade</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-content">
+      <span class="kicker reveal">Objetivo didático</span>
+      <h2 class="reveal">Por que este projeto é relevante em IA?</h2>
+      <div class="grid-2 reveal">
+        <div class="card"><h3>Ambiente controlado</h3><p>Tabuleiro pequeno, totalmente observável e determinístico facilita explicar conceitos formais.</p></div>
+        <div class="card"><h3>Ciclo agente-ambiente</h3><p>Perceber estado, escolher ação, alterar ambiente e receber recompensa em cada turno.</p></div>
+        <div class="card"><h3>Comparação de políticas</h3><p>Dois agentes com estratégias diferentes mostram trade-offs de decisão em tempo real.</p></div>
+        <div class="card"><h3>Visualização clara</h3><p>Controles de Step e Autoplay permitem analisar jogada a jogada ou partida completa.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-content">
+      <span class="kicker reveal">Jogo</span>
+      <h2 class="reveal">Mecânica do Dots and Boxes</h2>
+      <div class="grid-2 reveal">
+        <div class="card">
+          <h3>Regras essenciais</h3>
+          <ul>
+            <li>Cada ação desenha uma aresta livre entre pontos adjacentes.</li>
+            <li>Fechar o 4º lado de uma caixa concede 1 ponto.</li>
+            <li>Ao fechar caixa, o mesmo agente joga novamente.</li>
+            <li>Fim de jogo: quando todas as arestas foram usadas.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Objetivo</h3>
+          <p>Maximizar o número de caixas conquistadas no tabuleiro 5x5 de pontos (4x4 caixas).</p>
+          <div class="code">Recompensa por jogada
++1 para cada caixa fechada
+0 caso não feche caixa</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-content">
+      <span class="kicker reveal">Modelagem</span>
+      <h2 class="reveal">Como o ambiente é representado no código</h2>
+      <div class="code reveal">state = {
+  edges: {},
+  boxes: {},
+  currentPlayer: 1 | 2,
+  scores: { 1, 2 },
+  finished: boolean,
+  winner: 0 | 1 | 2,
+  turnCount,
+  log: []
+}</div>
+      <p class="reveal muted">Esse estado define tudo que os agentes percebem para decidir a próxima ação.</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-content">
+      <span class="kicker reveal">Classificação clássica</span>
+      <h2 class="reveal">Propriedades do ambiente em IA</h2>
+      <div class="card reveal">
+        <table class="table" role="table">
+          <thead><tr><th>Propriedade</th><th>Tipo no projeto</th></tr></thead>
+          <tbody>
+            <tr><td>Observabilidade</td><td>Totalmente observável</td></tr>
+            <tr><td>Determinismo</td><td>Determinístico</td></tr>
+            <tr><td>Número de agentes</td><td>Multiagente competitivo</td></tr>
+            <tr><td>Estrutura temporal</td><td>Sequencial por turnos</td></tr>
+            <tr><td>Espaço de estado/ação</td><td>Discreto</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-content">
+      <span class="kicker reveal">Agente 1</span>
+      <h2 class="reveal">Política Greedy (determinística)</h2>
+      <div class="grid-2 reveal">
+        <div class="card">
+          <h3>Heurística principal</h3>
+          <ul>
+            <li>Se pode fechar caixa, fecha imediatamente.</li>
+            <li>Se possível, evita arestas que criam terceira aresta perigosa.</li>
+            <li>Entre jogadas seguras, prioriza posições mais centrais.</li>
+            <li>Sem opção segura, escolhe risco mínimo.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Impacto esperado</h3>
+          <p>Comportamento previsível, forte em curto prazo e útil como baseline para comparar estratégias mais estocásticas.</p>
+          <span class="tag blue">Função: <code>pickGreedyMove()</code></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-content">
+      <span class="kicker reveal">Agente 2</span>
+      <h2 class="reveal">Política oportunista com aleatoriedade</h2>
+      <div class="grid-2 reveal">
+        <div class="card">
+          <h3>Heurística principal</h3>
+          <ul>
+            <li>Fecha caixas e prioriza lances que podem fechar mais de uma.</li>
+            <li>Busca jogadas seguras com maior pressão estratégica.</li>
+            <li>Desempata escolhas boas com componente aleatório.</li>
+            <li>Quando forçado ao risco, minimiza perigo esperado.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Impacto esperado</h3>
+          <p>Partidas menos repetitivas e mais realistas para estudar variabilidade entre execuções.</p>
+          <span class="tag red">Função: <code>pickTricksterMove()</code></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-content">
+      <span class="kicker reveal">Ciclo de decisão</span>
+      <h2 class="reveal">Loop de um agente inteligente no projeto</h2>
+      <div class="card reveal">
+        <div class="code">1) Perceber state atual
+2) Selecionar ação (aresta livre)
+3) Aplicar ação no ambiente
+4) Atualizar pontuação/turno
+5) Receber recompensa (caixa fechada)
+6) Repetir até terminal</div>
+      </div>
+      <p class="reveal muted">No código, esse fluxo ocorre principalmente em <code>stepGame()</code> e <code>applyMove()</code>.</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-content">
+      <span class="kicker reveal">Interface da simulação</span>
+      <h2 class="reveal">Como demonstrar em sala</h2>
+      <div class="grid-3 reveal">
+        <div class="card"><h3>Step</h3><p>Executa uma jogada por clique para análise detalhada da decisão.</p></div>
+        <div class="card"><h3>Autoplay</h3><p>Roda a partida automática em intervalos fixos (420ms) até o fim.</p></div>
+        <div class="card"><h3>Reset</h3><p>Reinicia estado, pontuações e histórico para novos experimentos.</p></div>
+      </div>
+      <div class="legend reveal">
+        <span class="tag blue">Azul: AI 1</span>
+        <span class="tag red">Vermelho: AI 2</span>
+        <span class="tag gold">Log: trilha de decisões</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-content">
+      <span class="kicker reveal">Leitura científica</span>
+      <h2 class="reveal">O que este projeto permite discutir em IA</h2>
+      <div class="grid-2 reveal">
+        <div class="card"><h3>Racionalidade limitada</h3><p>Heurísticas locais funcionam bem sem busca exaustiva (ex.: minimax).</p></div>
+        <div class="card"><h3>Trade-off exploração previsibilidade</h3><p>Randomização controlada aumenta diversidade de trajetórias.</p></div>
+        <div class="card"><h3>Métrica de performance</h3><p>Pontuação final e distribuição de vitórias em múltiplas partidas.</p></div>
+        <div class="card"><h3>Extensões futuras</h3><p>Treinar por RL, incluir minimax, torneios e análise estatística de políticas.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-content">
+      <span class="kicker reveal">Fechamento</span>
+      <h2 class="reveal">Resumo para a aula</h2>
+      <ul class="reveal">
+        <li>Projeto demonstra claramente agente, ambiente, ação, transição e recompensa.</li>
+        <li>Comparação entre duas políticas torna o conteúdo concreto e observável.</li>
+        <li>Mesmo em jogo simples, surgem temas centrais de IA moderna.</li>
+      </ul>
+      <p class="reveal muted">Pergunta final: como mudaríamos as políticas para maximizar desempenho em série de 100 partidas?</p>
+    </div>
+  </section>
+
+  <script>
+    class SlidePresentation {
+      constructor() {
+        this.slides = Array.from(document.querySelectorAll('.slide'));
+        this.progressFill = document.getElementById('progressFill');
+        this.navDots = document.getElementById('navDots');
+        this.index = 0;
+        this.lock = false;
+        this.buildDots();
+        this.observeSlides();
+        this.bindKeys();
+        this.bindWheel();
+        this.bindTouch();
+        this.updateUI();
+      }
+
+      buildDots() {
+        this.slides.forEach((_, i) => {
+          const btn = document.createElement('button');
+          btn.setAttribute('aria-label', `Ir para slide ${i + 1}`);
+          btn.addEventListener('click', () => this.go(i));
+          this.navDots.appendChild(btn);
+        });
+      }
+
+      observeSlides() {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              this.index = this.slides.indexOf(entry.target);
+              this.updateUI();
+            }
+          });
+        }, { threshold: 0.55 });
+
+        this.slides.forEach((s) => io.observe(s));
+      }
+
+      go(i) {
+        this.index = Math.max(0, Math.min(this.slides.length - 1, i));
+        this.slides[this.index].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        this.updateUI();
+      }
+
+      next() { this.go(this.index + 1); }
+      prev() { this.go(this.index - 1); }
+
+      updateUI() {
+        const pct = this.slides.length <= 1 ? 100 : (this.index / (this.slides.length - 1)) * 100;
+        this.progressFill.style.width = `${pct}%`;
+        Array.from(this.navDots.children).forEach((dot, i) => {
+          dot.classList.toggle('active', i === this.index);
+        });
+      }
+
+      bindKeys() {
+        window.addEventListener('keydown', (e) => {
+          const k = e.key;
+          if (['ArrowDown', 'ArrowRight', 'PageDown', ' '].includes(k)) {
+            e.preventDefault();
+            this.next();
+          } else if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(k)) {
+            e.preventDefault();
+            this.prev();
+          } else if (k === 'Home') {
+            e.preventDefault();
+            this.go(0);
+          } else if (k === 'End') {
+            e.preventDefault();
+            this.go(this.slides.length - 1);
+          }
+        }, { passive: false });
+      }
+
+      bindWheel() {
+        window.addEventListener('wheel', (e) => {
+          if (this.lock) return;
+          const threshold = 16;
+          if (Math.abs(e.deltaY) < threshold) return;
+          this.lock = true;
+          e.deltaY > 0 ? this.next() : this.prev();
+          setTimeout(() => { this.lock = false; }, 420);
+        }, { passive: true });
+      }
+
+      bindTouch() {
+        let y0 = 0;
+        window.addEventListener('touchstart', (e) => { y0 = e.changedTouches[0].clientY; }, { passive: true });
+        window.addEventListener('touchend', (e) => {
+          const dy = y0 - e.changedTouches[0].clientY;
+          if (Math.abs(dy) < 45) return;
+          dy > 0 ? this.next() : this.prev();
+        }, { passive: true });
+      }
+    }
+
+    new SlidePresentation();
+  </script>
+</body>
+</html>
