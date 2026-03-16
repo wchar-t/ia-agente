@@ -174,3 +174,13 @@ Isso produz partidas **menos determinísticas e mais interessantes**.
 * **Vermelho** → Agente 2
 
 As arestas e caixas são coloridas conforme o jogador que as conquistou.
+
+# Como Executar (Jupyter)
+
+1. Abra um notebook (ex: [Google Colab](https://colab.research.google.com/#create=true))
+2. Execute os comandos:
+ ```
+!git clone https://github.com/wchar-t/ia-agente.git
+%cd ia-agente/jupyter/
+%run dots_and_boxes_ai_styled_notebook.ipynb
+ ```
