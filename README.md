@@ -1,5 +1,10 @@
 # Dots and Boxes — Competição entre Agentes Inteligentes
 
+# Integrantes
+- João Pedro
+- Taylanne
+- Ana Laressa
+
 ## Visão Geral
 
 Este projeto implementa uma simulação do jogo **Dots and Boxes**, onde **dois agentes inteligentes competem entre si**.
