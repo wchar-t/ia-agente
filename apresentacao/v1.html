@@ -218,6 +218,7 @@
     .slide:nth-of-type(9) { background: linear-gradient(135deg, #14171c 0%, #293843 100%); }
     .slide:nth-of-type(10) { background: linear-gradient(135deg, #111319 0%, #1f2938 100%); }
     .slide:nth-of-type(11) { background: linear-gradient(135deg, #12141a 0%, #2a2f39 100%); }
+    .slide:nth-of-type(12) { background: linear-gradient(135deg, #0f1827 0%, #24354d 100%); }
     .slide:nth-of-type(1) .slide-content { max-width: min(980px, 92vw); }
     .slide:nth-of-type(2) .slide-content,
     .slide:nth-of-type(6) .slide-content,
@@ -227,7 +228,8 @@
     .slide:nth-of-type(5) .card { border-top: 3px solid rgba(255,255,255,0.5); }
     .slide:nth-of-type(7) .card { border-left: 3px solid rgba(239,68,68,0.55); }
     .slide:nth-of-type(10) .card { border-left: 3px solid rgba(122,176,255,0.55); }
-    .slide:nth-of-type(11) .slide-content { max-width: min(900px, 90vw); }
+    .slide:nth-of-type(11) .slide-content,
+    .slide:nth-of-type(12) .slide-content { max-width: min(900px, 90vw); }
     @media (max-width: 850px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
     @media (max-height: 700px) {
       :root { --pad: clamp(0.8rem, 3.2vw, 1.8rem); --title: clamp(1.3rem, 4.6vw, 2.8rem); }
@@ -252,9 +254,9 @@
 
   <section class="slide">
     <div class="slide-content">
-      <span class="kicker reveal">Fundamentos de IA • Aula universitária</span>
+      <span class="kicker reveal">Ana Laressa, João Pedro e Taylanne</span>
       <h1 class="reveal">Agentes Inteligentes em Ação: Dots and Boxes</h1>
-      <p class="reveal muted">Projeto React com competição AI vs AI para explicar percepção, decisão, recompensa e comportamento multiagente.</p>
+      <p class="reveal muted">Projeto de Dots and Boxes com dois agentes inteligentes competindo no mesmo ambiente para demonstrar percepção, decisão, ação e recompensa.</p>
       <div class="legend reveal">
         <span class="tag blue">AI 1: Greedy</span>
         <span class="tag red">AI 2: Heurística + Aleatoriedade</span>
@@ -265,12 +267,12 @@
   <section class="slide">
     <div class="slide-content">
       <span class="kicker reveal">Objetivo didático</span>
-      <h2 class="reveal">Por que este projeto é relevante em IA?</h2>
+      <h2 class="reveal">Por que Dots and Boxes funciona bem para estudar agentes?</h2>
       <div class="grid-2 reveal">
-        <div class="card"><h3>Ambiente controlado</h3><p>Tabuleiro pequeno, totalmente observável e determinístico facilita explicar conceitos formais.</p></div>
-        <div class="card"><h3>Ciclo agente-ambiente</h3><p>Perceber estado, escolher ação, alterar ambiente e receber recompensa em cada turno.</p></div>
-        <div class="card"><h3>Comparação de políticas</h3><p>Dois agentes com estratégias diferentes mostram trade-offs de decisão em tempo real.</p></div>
-        <div class="card"><h3>Visualização clara</h3><p>Controles de Step e Autoplay permitem analisar jogada a jogada ou partida completa.</p></div>
+        <div class="card"><h3>Ambiente simples</h3><p>O tabuleiro é pequeno, totalmente observável e fácil de acompanhar durante a apresentação.</p></div>
+        <div class="card"><h3>Ciclo completo de agente</h3><p>Cada turno mostra claramente o fluxo perceber o estado, escolher uma ação e observar o resultado.</p></div>
+        <div class="card"><h3>Duas políticas diferentes</h3><p>Os agentes usam estratégias distintas, o que permite comparar comportamentos no mesmo problema.</p></div>
+        <div class="card"><h3>Visualização direta</h3><p>Os botões de Step e Autoplay ajudam a analisar uma jogada por vez ou a partida inteira.</p></div>
       </div>
     </div>
   </section>
@@ -291,7 +293,7 @@
         </div>
         <div class="card">
           <h3>Objetivo</h3>
-          <p>Maximizar o número de caixas conquistadas no tabuleiro 5x5 de pontos (4x4 caixas).</p>
+          <p>Cada agente tenta conquistar o maior número possível de caixas no tabuleiro de 5x5 pontos, que forma 4x4 caixas.</p>
           <div class="code">Recompensa por jogada
 +1 para cada caixa fechada
 0 caso não feche caixa</div>
@@ -303,7 +305,7 @@
   <section class="slide">
     <div class="slide-content">
       <span class="kicker reveal">Modelagem</span>
-      <h2 class="reveal">Como o ambiente é representado no código</h2>
+      <h2 class="reveal">Como o ambiente do jogo é representado</h2>
       <div class="code reveal">state = {
   edges: {},
   boxes: {},
@@ -314,14 +316,14 @@
   turnCount,
   log: []
 }</div>
-      <p class="reveal muted">Esse estado define tudo que os agentes percebem para decidir a próxima ação.</p>
+      <p class="reveal muted">Esse estado concentra todas as informações percebidas pelos agentes para escolher a próxima jogada.</p>
     </div>
   </section>
 
   <section class="slide">
     <div class="slide-content">
       <span class="kicker reveal">Classificação clássica</span>
-      <h2 class="reveal">Propriedades do ambiente em IA</h2>
+      <h2 class="reveal">Como classificamos esse ambiente em IA</h2>
       <div class="card reveal">
         <table class="table" role="table">
           <thead><tr><th>Propriedade</th><th>Tipo no projeto</th></tr></thead>
@@ -340,7 +342,7 @@
   <section class="slide">
     <div class="slide-content">
       <span class="kicker reveal">Agente 1</span>
-      <h2 class="reveal">Política Greedy (determinística)</h2>
+      <h2 class="reveal">Agente 1: política greedy e determinística</h2>
       <div class="grid-2 reveal">
         <div class="card">
           <h3>Heurística principal</h3>
@@ -352,8 +354,8 @@
           </ul>
         </div>
         <div class="card">
-          <h3>Impacto esperado</h3>
-          <p>Comportamento previsível, forte em curto prazo e útil como baseline para comparar estratégias mais estocásticas.</p>
+          <h3>Leitura didática</h3>
+          <p>Esse agente é útil como referência porque seu comportamento é previsível: diante do mesmo estado, tende a escolher sempre a mesma ação.</p>
           <span class="tag blue">Função: <code>pickGreedyMove()</code></span>
         </div>
       </div>
@@ -363,7 +365,7 @@
   <section class="slide">
     <div class="slide-content">
       <span class="kicker reveal">Agente 2</span>
-      <h2 class="reveal">Política oportunista com aleatoriedade</h2>
+      <h2 class="reveal">Agente 2: oportunista com aleatoriedade</h2>
       <div class="grid-2 reveal">
         <div class="card">
           <h3>Heurística principal</h3>
@@ -375,8 +377,8 @@
           </ul>
         </div>
         <div class="card">
-          <h3>Impacto esperado</h3>
-          <p>Partidas menos repetitivas e mais realistas para estudar variabilidade entre execuções.</p>
+          <h3>Leitura didática</h3>
+          <p>Esse agente mostra que, mesmo com o mesmo objetivo, políticas diferentes podem gerar partidas menos previsíveis e resultados variados.</p>
           <span class="tag red">Função: <code>pickTricksterMove()</code></span>
         </div>
       </div>
@@ -386,7 +388,7 @@
   <section class="slide">
     <div class="slide-content">
       <span class="kicker reveal">Ciclo de decisão</span>
-      <h2 class="reveal">Loop de um agente inteligente no projeto</h2>
+      <h2 class="reveal">Como um agente inteligente atua no projeto</h2>
       <div class="card reveal">
         <div class="code">1) Perceber state atual
 2) Selecionar ação (aresta livre)
@@ -395,50 +397,29 @@
 5) Receber recompensa (caixa fechada)
 6) Repetir até terminal</div>
       </div>
-      <p class="reveal muted">No código, esse fluxo ocorre principalmente em <code>stepGame()</code> e <code>applyMove()</code>.</p>
     </div>
   </section>
 
   <section class="slide">
     <div class="slide-content">
-      <span class="kicker reveal">Interface da simulação</span>
-      <h2 class="reveal">Como demonstrar em sala</h2>
-      <div class="grid-3 reveal">
-        <div class="card"><h3>Step</h3><p>Executa uma jogada por clique para análise detalhada da decisão.</p></div>
-        <div class="card"><h3>Autoplay</h3><p>Roda a partida automática em intervalos fixos (420ms) até o fim.</p></div>
-        <div class="card"><h3>Reset</h3><p>Reinicia estado, pontuações e histórico para novos experimentos.</p></div>
-      </div>
-      <div class="legend reveal">
-        <span class="tag blue">Azul: AI 1</span>
-        <span class="tag red">Vermelho: AI 2</span>
-        <span class="tag gold">Log: trilha de decisões</span>
-      </div>
-    </div>
-  </section>
-
-  <section class="slide">
-    <div class="slide-content">
-      <span class="kicker reveal">Leitura científica</span>
-      <h2 class="reveal">O que este projeto permite discutir em IA</h2>
+      <span class="kicker reveal">Conclusão</span>
+      <h2 class="reveal">O que o projeto mostra sobre agentes inteligentes</h2>
       <div class="grid-2 reveal">
-        <div class="card"><h3>Racionalidade limitada</h3><p>Heurísticas locais funcionam bem sem busca exaustiva (ex.: minimax).</p></div>
-        <div class="card"><h3>Trade-off exploração previsibilidade</h3><p>Randomização controlada aumenta diversidade de trajetórias.</p></div>
-        <div class="card"><h3>Métrica de performance</h3><p>Pontuação final e distribuição de vitórias em múltiplas partidas.</p></div>
-        <div class="card"><h3>Extensões futuras</h3><p>Treinar por RL, incluir minimax, torneios e análise estatística de políticas.</p></div>
+        <div class="card">
+          <h3>Ideia central</h3>
+          <p>Nosso Dots and Boxes funciona como um ambiente de teste onde dois agentes observam o estado, escolhem ações e competem por recompensa.</p>
+        </div>
+        <div class="card">
+          <h3>Valor didático</h3>
+          <p>O projeto torna visível a diferença entre políticas de decisão sem precisar de um problema grande ou difícil de explicar.</p>
+        </div>
       </div>
     </div>
   </section>
 
   <section class="slide">
     <div class="slide-content">
-      <span class="kicker reveal">Fechamento</span>
-      <h2 class="reveal">Resumo para a aula</h2>
-      <ul class="reveal">
-        <li>Projeto demonstra claramente agente, ambiente, ação, transição e recompensa.</li>
-        <li>Comparação entre duas políticas torna o conteúdo concreto e observável.</li>
-        <li>Mesmo em jogo simples, surgem temas centrais de IA moderna.</li>
-      </ul>
-      <p class="reveal muted">Pergunta final: como mudaríamos as políticas para maximizar desempenho em série de 100 partidas?</p>
+      <h1 class="reveal">Obrigado!</h1>
     </div>
   </section>
 
@@ -543,7 +524,6 @@
   </script>
 </body>
 </html>
-
 
 
 
